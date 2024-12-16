@@ -103,6 +103,7 @@ def one_article(id):
 
 @app.route('/articles', methods=['POST'])
 def create_article():
+    
     title = request.json.get('title', None)
     content = request.json.get('content', None)
     user_id = request.json.get('user_id', None)
@@ -114,29 +115,59 @@ def create_article():
     db.session.add(data)
     db.session.commit()
 
-    check = Users.query.filter_by(title=title)
     
-    return jsonify({"msg": "get all articles"})
+    return jsonify({"msg": "post all articles"})
+
+
+
+@app.route('/articles/<int:id>', methods=['DELETE'])
+def delete_articles(id):
+    article = Articles.query.get(id)
+    db.session.delete(article)
+    db.session.commit()
+    return jsonify({"msg": "delete article with id:" + str(id), "article": article.serialize()})
+
+
+@app.route('/articles/<int:id>', methods=['PUT'])
+def edit_articles(id):
+
+    title = request.json.get('title', None)
+    content = request.json.get('content', None)
+    user_id = request.json.get('user_id', None)
+
+
+
+    article = Articles.query.get(id)
+    if not article:
+        return jsonify({"msg" : "article not found"}), 404
+    article.title = title or article.title
+    article.content = content or article.content
+    db.session.commit()
+    return jsonify({"msg": "delete article with id:" + str(id), "article": article.serialize()})
+
+
+
 
 
 # ArticlesTags
 
-@app.route('/articlesTags', methods=['POST'])
+@app.route('/articles_tags', methods=['POST'])
 def create_articleTags():
-    title = request.json.get('title', None)
-    content = request.json.get('content', None)
-    user_id = request.json.get('user_id', None)
+    article_id = request.json.get('article_id', None)
+    tag_id = request.json.get('tag_id', None)
+    extra_info = request.json.get('extra_info', None)
 
-    if not title or not content or not user_id:
+    if not article_id or not tag_id:
         return jsonify({"msg": 'todos los datos son necesarios'}), 400
     
-    data = Articles(title=title, content=content, user_id=user_id)
+    data = ArticlesTags(article_id=article_id, tag_id=tag_id, extra_info=extra_info)
     db.session.add(data)
     db.session.commit()
-
-    check = Users.query.filter_by(title=title)
     
     return jsonify({"msg": "get all articles"})
+
+
+
 
 
 #Planets
